@@ -12,6 +12,7 @@ use app\models\repositories\DiseaseRepository;
 use app\models\repositories\CategoryRepository;
 use app\models\repositories\FoodsRepository;
 use app\models\repositories\DietRepository;
+use Buki\Pdox;
 
 return [
     'root_dir' => dirname(__DIR__),
@@ -51,6 +52,16 @@ return [
             'password' => 'postgres',
             'database' => 'dietcalc',
             'charset' => 'utf8'
+        ],
+        'ormDb' => [
+            'class'     => Pdox::class,
+            'config' => ['driver'    => 'mysql',
+                         'host'      => '192.168.11.3',
+                         'port'      => '3306',
+                         'database'  => 'dietcalc2',
+                         'username'  => 'stas',
+                         'password'  => '0,ybycr',
+                         'charset'   => 'utf8']
         ],
         'request' => [
             'class' => Request::class

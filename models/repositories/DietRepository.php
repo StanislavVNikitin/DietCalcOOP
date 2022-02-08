@@ -79,7 +79,13 @@ class DietRepository extends Repository
 
     protected function findFoodToDiet($diet,$nameid,$id, $food_id){
         $tableName = $this->getTableName();
-        $sql = "SELECT * FROM {$tableName}
+   /*     $where = [
+           'foods_id' => $food_id,
+            $nameid => $id
+        ];
+
+       $findfooddiet =  App::call()->ormDb->table($tableName)->where($where)->fetch($this->getEntityClass());*/
+       $sql = "SELECT * FROM {$tableName}
                     WHERE foods_id = :foods_id AND {$nameid} = :{$nameid}";
         $params = [
             'foods_id' => $food_id,
@@ -112,12 +118,19 @@ class DietRepository extends Repository
     protected function deleteFoodToDietExecute($nameid,$id, $diet_id)
     {
         $tableName = $this->getTableName();
-        $sql = "DELETE FROM {$tableName} WHERE id = :diet_id AND {$nameid}=:{$nameid}";
-        $params = [
-            'diet_id' => $diet_id,
+        $where = [
+            'id' => $diet_id,
             $nameid => $id
+
         ];
-        return App::call()->db->execute($sql, $params);
+        return App::call()->ormDb->table($tableName)->where($where)->delete();
+
+        //$sql = "DELETE FROM {$tableName} WHERE id = :diet_id AND {$nameid}=:{$nameid}";
+       // $params = [
+        //    'diet_id' => $diet_id,
+       //     $nameid => $id
+       // ];
+       // return App::call()->db->execute($sql, $params);
     }
 
     public function deleteAllDiet(){
@@ -126,7 +139,7 @@ class DietRepository extends Repository
             $user_id = $_SESSION['auth']['id'];
             $deletedietarray = $this->getWhereAll('user_id', $user_id);
             foreach ($deletedietarray as $itemkey) {
-                $this->deleteFoodToDietExecute('user_id', $user_id, $itemkey['id']);
+                $this->deleteFoodToDietExecute('user_id', $user_id, $itemkey->id);
             }
 
 

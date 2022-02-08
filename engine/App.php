@@ -10,6 +10,7 @@ use app\models\repositories\ProfileRepository;
 use app\models\repositories\UserRepository;
 use app\models\repositories\RoleRepository;
 use app\traits\TSingletone;
+use Buki\Pdox;
 
 
 /**
@@ -17,6 +18,7 @@ use app\traits\TSingletone;
  * @property Request $request
  * @property Session $session
  * @property Db $db
+ * @property Pdox $ormDb
  * @property Render $render
  * @property TwigRender $twigRender
  * @property UserRepository $userRepository

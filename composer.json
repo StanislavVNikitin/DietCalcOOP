@@ -2,6 +2,7 @@
     "require": {
         "twig/twig": "^3.0",
       "ext-json": "*",
-        "robmorgan/phinx": "^0.12.10"
+        "robmorgan/phinx": "^0.12.10",
+        "izniburak/pdox": "^1.6"
     }
 }
