@@ -1,0 +1,212 @@
+<h1>Диетологический калькулятор</h1>
+{% if message  %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <strong>{{ message }}</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" data-bs-target="#my-alert"
+                aria-label="Close"></button>
+    </div>
+{% endif %}
+
+    <div>
+        <input hidden type="text" id="idfoodtodiet" name="idfoodtodiet" value="{{ idfoodtodiet }}"><br>
+        <label for="selectFood" class="form-label">Выбор продукта для добавления</label>
+        <select id="selectFood" class="form-select" aria-label="Default select example" name="foodid"
+                {% if action == "edit" %} disabled {% endif %}>
+            {% for food in foods %}
+                <option {% if food.id == foodsidedit %}selected{% endif %}
+                        value="{{ food.id }}">{{ food.name }}</option>
+        {% endfor %}
+        </select>
+        <div class="input-group">
+            <button type="button" class="col-2 btn btn-outline-danger" onclick="this.nextElementSibling.stepDown()">
+                <b>-</b></button>
+            <input id="inputCountFood" class="col-8 form-control multiple size" type="number" name="foodcount" min="0"
+                   value="{{ count }}">
+            <button type="button" class="col-2 btn btn-outline-success" onclick="this.previousElementSibling.stepUp()">
+                <b>+</b></button>
+        </div>
+        <button data-id="{{ user.id }}" class="{% if action == "edit" %}save {% else %}addfood {% endif%} btn btn-primary mb-3 col-12">{{ button }}</button>
+
+    </div>
+
+
+<table class="table table-bordered">
+    <thead>
+    <tr>
+        <th class="col-6">Продукты</th>
+        <th class="col-1">Кол.</th>
+        <th class="col-1">Бел.</th>
+        <th class="col-1">Жир.</th>
+        <th class="col-1">Угл.</th>
+        <th class="col-1">Калл.</th>
+        <th class="col-1"></th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for product in products  %}
+        {% if product.special_foods == 1 %}
+            {% if specfoodfind == 1 %}
+            {% else %}
+                 <tr>
+                    <th scope="row" colspan="12">Специальное питание:</th>
+                </tr>
+            {% endif %}
+            {% set specfoodfind = 1 %}
+        <tr id="{{ product.id }}">
+            <td class="col-5">{{ product.name }}</td>
+            <td class="col-1">{{ product.count }}</td>
+            <td>{{ product.protein }}</td>
+            <td>{{ product.fat }}</td>
+            <td>{{ product.carbohydrates }}</td>
+            <td id="calories">{{ product.calories }}</td>
+            <td class="col-2">
+                <a href="/dietcalc/edit/?id={{ product.id }}" class="edit btn-mini btn btn-warning"><b>E</b></a>
+                <button data-id="{{ product.id }}" class="delete btn-mini btn btn-danger"><b>Х</b></button>
+            </td>
+        </tr>
+        {% endif %}
+    {% endfor %}
+    <tr>
+        <th scope="row" colspan="12"></th>
+    </tr>
+    {% for product in products  %}
+        {% if product.special_foods == 0 %}
+            {% if foodfind == 1 %}
+            {% else %}
+                <tr>
+                    <th scope="row" colspan="12">Продукты:</th>
+                </tr>
+            {% endif %}
+            {% set foodfind = 1 %}
+        <tr id="{{ product.id }}">
+            <td class="col-5">{{ product.name }}</td>
+            <td class="col-1">{{ product.count }}</td>
+            <td>{{ product.protein }}</td>
+            <td>{{ product.fat }}</td>
+            <td>{{ product.carbohydrates }}</td>
+            <td id="calories">{{ product.calories }}</td>
+            <td class="col-2">
+                <a href="/dietcalc/edit/?id={{ product.id }}" class="edit btn-mini btn btn-warning"><b>E</b></a>
+                <button data-id="{{ product.id }}" class="delete btn-mini btn btn-danger"><b>Х</b></button>
+            </td>
+        </tr>
+        {% endif %}
+    {% endfor %}
+    <tr>
+        <td scope="row" colspan="2"></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th scope="row" colspan="2">Итого</th>
+        <td><span id="sumprotein"> {{ sumnvpdiet.sumprotein }} </span></td>
+        <td><span id="sumfat"> {{ sumnvpdiet.sumfat }}</span></td>
+        <td><span id="sumcarbohydrates"> {{ sumnvpdiet.sumcarbohydrates }}</span></td>
+        <td><span id="sumcalories">{{ sumnvpdiet.sumcalories }}</td>
+        <td></td>
+    </tr>
+    </tbody>
+</table>
+
+<button type="button" class="cleanall btn btn-danger">Очистить все</button>
+{% if isAuth %}
+<button type="button" class="savediet btn btn-success">Сохранить диету</button>
+{% endif %}
+
+<script>
+    let buttonsadd = document.querySelectorAll('.addfood');
+    buttonsadd.forEach((elem) => {
+        elem.addEventListener('click', () => {
+            var food_id = document.getElementById("selectFood").value;
+            var count = document.getElementById("inputCountFood").value;
+            (
+                async () => {
+                    const response = await fetch('/dietcalc/add', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json;charset=utf-8'},
+                        body: JSON.stringify({
+                            food_id: food_id,
+                            count: count
+                        })
+                    });
+                    const answer = await response.json();
+                    console.log(answer.message);
+                    location.reload();
+                }
+            )();
+        })
+    });
+
+    let buttonssave = document.querySelectorAll('.save');
+    buttonssave.forEach((elem) => {
+        elem.addEventListener('click', () => {
+            var food_id = document.getElementById("selectFood").value;
+            var count = document.getElementById("inputCountFood").value;
+            var idfoodtodiet = document.getElementById("idfoodtodiet").value;
+            (
+                async () => {
+                    const response = await fetch('/dietcalc/save', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json;charset=utf-8'},
+                        body: JSON.stringify({
+                            food_id: food_id,
+                            count: count,
+                            idfoodtodiet: idfoodtodiet
+                        })
+                    });
+                    const answer = await response.json();
+                    console.log(answer.message);
+                    location.reload();
+                }
+            )();
+        })
+    });
+
+    let buttonsdel = document.querySelectorAll('.delete');
+    buttonsdel.forEach((elem) => {
+        elem.addEventListener('click', () => {
+            let id = elem.getAttribute('data-id');
+            (
+                async () => {
+                    const response = await fetch('/dietcalc/delete', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json;charset=utf-8'},
+                        body: JSON.stringify({
+                            id: id
+                        })
+                    });
+                    const answer = await response.json();
+                    document.getElementById(id).remove();
+                    console.log(answer.message);
+                    document.getElementById('calories').innerText = answer.sumnvpdiet.sumcalories;
+                    document.getElementById('protein').innerText = answer.sumnvpdiet.sumprotein;
+                    document.getElementById('sumprotein').innerText = answer.sumnvpdiet.sumprotein;
+                    document.getElementById('sumfat').innerText = answer.sumnvpdiet.sumfat;
+                    document.getElementById('sumcarbohydrates').innerText = answer.sumnvpdiet.sumcarbohydrates;
+                    document.getElementById('sumcalories').innerText = answer.sumnvpdiet.sumcalories;
+                }
+            )();
+        })
+    });
+
+    let buttonscleanall = document.querySelectorAll('.cleanall');
+    buttonscleanall.forEach((elem) => {
+        elem.addEventListener('click', () => {
+            (
+                async () => {
+                    const response = await fetch('/dietcalc/cleanall', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json;charset=utf-8'},
+                        body: JSON.stringify({
+                        })
+                    });
+                    const answer = await response.json();
+                    location.reload();
+                }
+            )();
+        })
+    });
+</script>

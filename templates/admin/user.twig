@@ -1,0 +1,99 @@
+{% if isAdmin %}
+<h2>Администрируем Пользователей </h2>
+
+<div class='alert alert-success alert-dismissible fade show d-none' id="message" role='alert'>
+</div>
+<div class='alert alert-danger alert-dismissible fade show d-none' id="error" role='alert'>
+</div>
+
+    <table class="table table-bordered">
+    <thead>
+    <tr>
+        <th class="col-5">Login</th>
+        <th class="col-4">Еmail</th>
+        <th class="col-1">Роль</th>
+        <th class="col-2"></th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for user in users %}
+    <tr id="{{ user.id }}">
+        <td class="col-5"><input id="login-{{ user.id }}" type="text" name="login" value="{{  user.login }}"></td>
+        <td class="col-4"><input id="email-{{ user.id }}"type="text" name="email" value="{{  user.email }}"></td>
+        <td class="col-1">
+            <select id="selectrole-{{ user.id }}" class="form-select" name="roleid">
+            {% for role in roles %}
+                <option {% if user.role_id == role.id %} selected {% endif %} value="{{ role.id }}">{{ role.name }}</option>
+            {% endfor %}
+            </select>
+        </td>
+        <td class="text-center">
+            <button data-id="{{ user.id }}" class="edit">Изменить</button>
+            <button data-id="{{ user.id }}" class="delete">Удалить</button></td>
+    </tr>
+    {% endfor %}
+
+{% else %}
+    Для данного раздела нужно обладать правами Администратора!
+{% endif %}
+
+    <script>
+        let buttonsdel = document.querySelectorAll('.delete');
+        buttonsdel.forEach((elem) => {
+            elem.addEventListener('click', () => {
+                let id = elem.getAttribute('data-id');
+                (
+                    async () => {
+                        const response = await fetch('/adminuser/delete', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json;charset=utf-8'},
+                            body: JSON.stringify({
+                                id: id
+                            })
+                        });
+                        const answer = await response.json();
+                        if (answer.message === "ok"){
+                            document.getElementById(id).remove();
+                            var message = document.getElementById('message');
+                            message.innerText = "Пользователь Удален!";
+                            message.classList.remove('d-none');
+                            setTimeout("message.classList.add('d-none')", 5000);
+
+                        }else{
+                            var error = document.getElementById('error');
+                            error.innerText = "Ошибка удаления!" + answer.message;
+                            error.classList.remove('d-none');
+                            setTimeout("error.classList.add('d-none')", 5000);
+                        }
+                    }
+                )();
+            })
+        });
+
+
+        let buttonsedit = document.querySelectorAll('.edit');
+        buttonsedit.forEach((elem) => {
+            elem.addEventListener('click', () => {
+                let id = elem.getAttribute('data-id');
+                var login = document.getElementById("login-"+id).value;
+                var email = document.getElementById("email-"+id).value;
+                var role = document.getElementById("selectrole-"+id).value;
+                (
+                    async () => {
+                        const response = await fetch('/adminuser/save', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json;charset=utf-8'},
+                            body: JSON.stringify({
+                                id: id,
+                                login: login,
+                                email: email,
+                                role: role
+                            })
+                        });
+                        const answer = await response.json();
+                            console.log(answer.message);
+                    }
+                )();
+            })
+        });
+    </script>

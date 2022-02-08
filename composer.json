@@ -1,0 +1,7 @@
+{
+    "require": {
+        "twig/twig": "^3.0",
+      "ext-json": "*",
+        "robmorgan/phinx": "^0.12.10"
+    }
+}

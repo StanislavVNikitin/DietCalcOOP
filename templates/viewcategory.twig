@@ -1,0 +1,49 @@
+<h2>Категория  продуктов: <b>{{ NameCategory }}</b></h2>
+<div class="row">
+    {% for food in categoryfood %}
+    <div class="col-3">
+        <img src="/images/foods/{{ food.image }}" title = "{{ food.name}}">
+        <p>{{ food.name }}</p>
+        <div class="input-group">
+        <div type="button" class="col-2 btn btn-outline-danger" onclick="this.nextElementSibling.stepDown()">
+                <b>-</b></div>
+        <input id="inputCountFood-{{ food.id }}" class="col-8 form-control multiple size" type="number" name="foodcount" min="0"
+                   value="10">
+        <div type="button" class="col-2 btn btn-outline-success" onclick="this.previousElementSibling.stepUp()">
+                <b>+</b></div>
+        </div>
+        <input id="submmitAddFood" type="submit" class="addfood btn btn-primary mb-3 col-12" name="submit" data-id={{ food.id }}
+               value="Добавить">
+    </div>
+{% endfor %}
+</div>
+
+
+
+<script>
+    let buttonsedit = document.querySelectorAll('.addfood');
+    buttonsedit.forEach((elem) => {
+        elem.addEventListener('click', () => {
+            var food_id = elem.getAttribute('data-id');
+            var count = document.getElementById("inputCountFood-"+ food_id).value;
+            (
+                async () => {
+                    const response = await fetch('/dietcalc/add', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json;charset=utf-8'},
+                        body: JSON.stringify({
+                            food_id: food_id,
+                            count: count
+                        })
+                    });
+                    const answer = await response.json();
+                    console.log(answer.message);
+                    document.getElementById('calories').innerText = answer.sumnvpdiet.sumcalories;
+                    document.getElementById('protein').innerText = answer.sumnvpdiet.sumprotein;
+
+                }
+            )();
+        })
+    });
+
+</script>

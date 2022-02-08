@@ -1,0 +1,107 @@
+<h3>Профиль пользователя {{ userName }}</h3>
+
+<div class='alert alert-success alert-dismissible fade show d-none' id="message" role='alert'>
+</div>
+<div class='alert alert-danger alert-dismissible fade show d-none' id="error" role='alert'>
+</div>
+
+
+{% if profile %}
+
+    <div class="mb-3">
+        <label for="firstname" class="form-label">Имя</label>
+        <input id="firstname" class="form-control" type="text" name="firstname" value="{{  profile.firstname }}">
+    </div>
+    <div class="mb-3">
+        <label for="lastname" class="form-label" >Фамилия</label>
+        <input id="lastname" class="form-control" type="text" name="lastname" value="{{  profile.lastname }}">
+    </div>
+    <div class="mb-3">
+        <label for="diseaseid" class="form-label" >Заболевание</label>
+        <select id="diseaseid" class="form-select" name="diseaseid">
+            {% for disease in diseases %}
+                <option {% if profile.disease_id == disease.id %} selected {% endif %} value="{{ disease.id }}">{{ disease.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label for="gender" class="form-label" >Пол</label>
+        <select id="gender" class="form-select" name="gender">
+            <option {% if profile.gender %} {% else %}selected {% endif %} value=""></option>
+           <option {% if profile.gender == 'm' %} selected {% endif %} value="m">Мужской</option>
+           <option {% if profile.gender == 'f' %} selected {% endif %} value="f">Женский</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label for="weight" class="form-label">Вес в кг</label>
+        <input id="weight" class="form-control"  type="number" name="weight" value="{{  profile.weight }}">
+    </div>
+    <div class="mb-3">
+        <label for="height" class="form-label">Рост в см</label>
+        <input id="height" class="form-control" type="number" name="height" value="{{  profile.height }}">
+    </div>
+    <div class="mb-3">
+        <label for="birthday" class="form-label">День рождения</label>
+        <input id="birthday" class="form-control" type="date" name="birthday" value="{{  profile.birthday }}">
+    </div>
+    <div class="mb-3">
+        <label for="passwordconf" class="form-label">Пароль для подтверждения изменений</label>
+        <input id="passwordconf" class="form-control" type="password" name="passwordconfirm" value="">
+    </div>
+        <div class="btn btn-primary">
+            <button data-id="{{ profile.user_id }}" type="submit" class="btn btn-primary save">Сохранить изменения</button>
+        </div>
+
+{% else %}
+Профиль не создан
+{% endif %}
+
+
+<script>
+    let buttonsdel = document.querySelectorAll('.save');
+    buttonsdel.forEach((elem) => {
+        elem.addEventListener('click', () => {
+            let id = elem.getAttribute('data-id');
+            var firstname = document.getElementById("firstname").value;
+            var lastname = document.getElementById("lastname").value;
+            var diseaseid = document.getElementById("diseaseid").value;
+            var gender = document.getElementById("gender").value;
+            var weight = document.getElementById("weight").value;
+            var height = document.getElementById("height").value;
+            var birthday = document.getElementById("birthday").value;
+            var passwordconf = document.getElementById("passwordconf").value;
+            (
+                async () => {
+                    const response = await fetch('/profile/save', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json;charset=utf-8'},
+                        body: JSON.stringify({
+                            id: id,
+                            firstname: firstname,
+                            lastname: lastname,
+                            disease_id: diseaseid,
+                            gender: gender,
+                            weight: weight,
+                            height: height,
+                            birthday: birthday,
+                            passwordconf: passwordconf
+                        })
+                    });
+                    const answer = await response.json();
+                    if (answer.message === "ok"){
+                        var message = document.getElementById('message');
+                        message.innerText = "Новые данные сохранены в профайле пользователя!";
+                        message.classList.remove('d-none');
+                        setTimeout("message.classList.add('d-none')", 5000);
+                    }else{
+                        var error = document.getElementById('error');
+                        error.innerText = "Ошибка сохранения профайла!" + answer.message;
+                        error.classList.remove('d-none');
+                        setTimeout("error.classList.add('d-none')", 5000);
+                    }
+                    console.log(answer.message);
+                }
+            )();
+        })
+    });
+</script>
